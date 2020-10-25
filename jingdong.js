@@ -1,15 +1,27 @@
 //遇到问题请在 https://chrxw.com 留言
-//Ver 0.3 2020.10.25
+//Ver 0.51 2020.10.25
 //By Chr_(chr@chrxw.com)
-//增强模式，支持自动加购任务，如果不需要请把true改成false
-var adv_mode = true;
+//=========================
+//功能配置
+//自动加入会员（设为false禁用)
+var auto_join_vip = true;
+//自动完成加购任务（设为false禁用)
+var auto_add_cart = true;
+//=========================
 auto.waitFor();
-console.show();
-//自动完成浏览商品和加购任务，如果需要关闭就改成false
-var adv_mode = true;
+// console.show();
 toast('\n脚本开始运行\n请切换到任务页');
-className("android.view.View").text("收取金币").waitFor();
-if (!className("android.view.View").text("10000").exists()) {
+for (var i = 0; i < 10; i++) {
+    //等待切换到任务页
+    if (className("android.view.View").text("收取金币").exists() ||
+        className("android.view.View").text("立即解锁").exists()) {
+        log('break');
+        break;
+    }
+    rsleep(1);
+}
+
+if (!className("android.view.View").textStartsWith("邀请好友助力").exists()) {
     advclick(className("android.view.View").text("领金币").findOnce());
 }
 toast("\n即将开始工作\n中途需退出请按【音量+】终止");
@@ -34,18 +46,18 @@ for (; ;) {
                 view2();
                 flag = true;
             }
-        } else if (txt.search("成功入会可得") != -1) {
+        } else if (auto_join_vip && txt.search("成功入会可得") != -1) {
             var btn = tasks[i + 1];
             if (btn.text() == "去完成") {
                 advclick(btn);
                 view3();
                 flag = true;
             }
-        } else if (adv_mode & txt.search("5个") != -1) {
+        } else if (auto_add_cart && txt.search("5个") != -1) {
             var btn = tasks[i + 1];
             if (btn.text() == "去完成") {
                 advclick(btn);
-                advview();
+                view4();
                 flag = true;
             }
         }
@@ -71,6 +83,7 @@ function view() {
 function view2() {
     rsleep(2);
     back();
+    rsleep(2);
 }
 //模拟浏览（开卡）
 function view3() {
@@ -84,8 +97,8 @@ function view3() {
         advback();
     }
 }
-//高级浏览（浏览商品、加购任务）
-function advview() {
+//模拟浏览（浏览商品、加购任务）
+function view4() {
     rsleep(3);
     var add_cart = true;
     var count = 4;
@@ -97,9 +110,9 @@ function advview() {
         var count = 5;
     }
     log(add_cart ? "加购模式" : "浏览模式");
-    var prices = className("android.view.View").textMatches("^¥[0-9]+\.[0-9][0-9]").untilFind();
 
     for (var i = 0; i < 5; i++) {
+        var prices = className("android.view.View").textMatches("^¥[0-9]+\.[0-9][0-9]").untilFind();
         log(i, prices[i].text());
         var good = prices[i].parent().parent();
         if (good.childCount() > count) {
@@ -113,8 +126,7 @@ function advview() {
             className("android.widget.ImageView").desc("返回").click();
         } else {
             good.child(4).click();
-            rslide(1);
-        }
+        } rslide(1);
         rsleep(2);
     }
     advback();
@@ -135,7 +147,7 @@ function advback() {
             continue;
         }
         className("android.widget.ImageView").desc("返回").click();
-        rsleep(3);
+        rsleep(5);
         if (className("android.view.View").text("领金币").exists()) {
             return;
         }
@@ -170,8 +182,4 @@ function advclick(uiobject) {
     // var x = random(rect.left, rect.right);
     // var y = random(rect.top, rect.bottom);
     click(rect.centerX(), rect.centerY());
-}
-function printrect(uiobject) {
-    rect = uiobject.bounds();
-    log('宽', rect.width(), ' 高', rect.height());
 }
