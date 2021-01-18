@@ -1,4 +1,4 @@
-# taobao_auto
+# AutoJS Scripts
 一些自用的AutoJS活动脚本
 
 2021.1.18更新炸年兽脚本
